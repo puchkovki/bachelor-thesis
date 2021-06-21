@@ -3,7 +3,7 @@
 
 \subsection{Общие замечания}
 
-Для исследования предложенного в \cref{section:dangling} алгоритма и сравнения его с иными
+Для исследования предложенного алгоритма сбора мусора и сравнения с иными
 подходами, такими как мгновенное удаление запрошенных элементов и, как следствие, отсутствие
 мусора в системе, был написан прототип на языке Go.
 
@@ -11,7 +11,7 @@
 количество документов $N_0$, затем удаляется $N_0\cdot \lambda$, где $\lambda \in [0; 1]$.
 
 Пороговое значение \textit{dangling} для индексе устанавливается
-$\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C \leq 2$ для
+$\frac{\text{bitmap block size}}{C}$, где $C \in \mathbb{I}, C \geq 1$ для
 большого накопления мусора.
 
 Для этого сценария были изучены производительность таких операций, как:
@@ -20,11 +20,11 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
     Как следствие, множество ненужных обращений к памяти для \textit{повисших}
     документов.
     \item Измерение времени поиска признаков после сбора мусора.
-    \item Измерение времени поиска признаков после <<мгновенного удаления>>.
-    \item Измерение времени работы алгоритма сбора мусора и алгоритма <<мгновенного удаления>>.
+    \item Измерение времени поиска признаков после <<мгновенного>> удаления.
+    \item Измерение времени работы алгоритма сбора мусора и алгоритма <<мгновенного>> удаления.
 \end{enumerate}
 
-Каждый вариант поиска признаков разбивается на 2 варианта:
+Каждый вариант поиска признаков разбивается на 3 варианта:
 \begin{enumerate}
       \item Запрос по всем вхождениям заданного ключа для фиксированного числа
       добавленных элементов $N_0$ и меняющегося размера блока битмапы $2^{x}$.
@@ -33,15 +33,13 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
       \item Измерение времени поиска всех вхождения признака для меняющегося числа добавленных элементов $N_0$.
 \end{enumerate}
 
-Количество добавленных документов $N_0 = 10^{x}, x \in \{2, \cdots, 6\}$ в нашем опыте.
+Количество добавленных документов в нашем опыте $N_0 = 10^{x}, x \in \{2, \cdots, 5\}$.
 Измеряется время поиска признаков с различной частотой появления в индексе: 1,
 5, 10, 15\%, от общего числа добавленных документов.
 
-%Далее при различных размерах блока, тем самым выясняется оптимальный размер блока. В реальности это значение получается из логических соображений (ни много, ни мало) и колеблется около 15\%.
-
-Кроме того, для предложенного индекса была изучена зависимость количества чтений,
-записей на диск и слияний с данными на диске после добавления элементов и после
-их удаления в зависимости от количества добавленных элементов $N_0$.
+Кроме того, для предложенного индекса была изучена зависимость количества
+записей на диск и слияний с данными на диске после добавления и удаления 'элементов
+в зависимости от количества добавленных элементов $N_0$.
 
 \begin{table}[H]
 \caption{Аппаратные и программные характеристики платформы}
@@ -59,7 +57,6 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
       Операционная система   & Ubuntu 18.04 LTS \\ \hline
       Компилятор             & Go 1.13.8        \\ \hline
 \end{tabular}
-\label{tab:arch_settings}
 \end{table}
 
 \begin{table}[H]
@@ -74,31 +71,30 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
             Задержка при записи                                                           & 50 мс            \\ \hline
             Задержка при чтении                                                           & 20 мс            \\ \hline
             Отношение числа удаленных документов к добавленным $\lambda$                  & $\frac{2}{3}$    \\ \hline
-            Пороговое отношение числа \textit{повисших} документов $\frac{\lambda}{C}$    & $\frac{1}{3}$    \\ \hline
+            Пороговое отношение числа \textit{повисших} документов $\frac{1}{C}$          & $\frac{1}{3}$    \\ \hline
 \end{tabular}
-\label{tab:lsm_settings}
 \end{table}
 
-Сравним производительность индекса после добавления $10^2$, $10^3$, $10^4$ и $10^5$
+Далее сравним производительность индекса после добавления $10^2$, $10^3$, $10^4$ и $10^5$
 документов соответственно. Для каждого значения добавленных элементов рассмотрим
-признаки с различающейся частотой повторения в данных.
+признаки с различной частотой повторов в данных.\nopagebreak[4]
 
 \subsection{Поисковый запрос по всем вхождениям заданного ключа для фиксированного числа добавленных элементов}
 
 \subsubsection{Добавление $10^3$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e3/body.png}
-\caption{Признак \textit{body} встречается в 16\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/from.png}
-\caption{Признак \textit{from} встречается в 31\% документов}
+\includegraphics[width=\linewidth, height=9.5cm]{fig/limit_1e6/1e3/body.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{body}, который встречается в 16\% документов}
+\includegraphics[width=\linewidth, height=9.5cm]{fig/limit_1e6/1e3/from.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{from}, который встречается в 31\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/to.png}
-\caption{Признак \textit{to} встречается менее, чем в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/subject.png}
-\caption{Признак \textit{subject} встречается в 13\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1e6/1e3/to.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{to}, который встречается менее, чем в 1\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1e6/1e3/subject.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{subject}, который встречается в 13\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^3$ элементов алгоритм сбора мусора дает существенный
@@ -108,56 +104,56 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e4/body.png}
-\caption{Признак \textit{body} встречается в 18\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{body}, который встречается в 18\% документов}
 \includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/from.png}
-\caption{Признак \textit{from} встречается в 7\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{from}, который встречается в 7\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/to.png}
-\caption{Признак \textit{to} встречается менее, чем в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/subject.png}
-\caption{Признак \textit{subject} встречается в 8\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1e6/1e4/to.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{to}, который встречается менее, чем в 1\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1e6/1e4/subject.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{subject}, который встречается в 8\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^4$ элементов алгоритм сбора мусора дает выигрыш на большинстве признаков
-по сравнению в <<мгновенным>> удалением и поиском в данных с мусором.
+по сравнению с <<мгновенным>> удалением и поиском в данных с мусором.
 
 \subsubsection{Добавление $10^5$ документов}
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e5/body.png}
-\caption{Признак \textit{body} встречается в 16\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{body}, который встречается в 16\% документов}
 \includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e5/from.png}
-\caption{Признак \textit{from} встречается в 1\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{from}, который встречается в 1\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e5/to.png}
-\caption{Признак \textit{to} встречается в 0,05\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e5/subject.png}
-\caption{Признак \textit{subject} встречается в 5\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1e6/1e5/to.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{to}, который встречается в 0,05\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1e6/1e5/subject.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{subject}, который встречается в 5\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^5$ добавленных документов алгоритм сбора мусора эффективнее
-по сравнению в <<мгновенным>> удалением и поиском в данных с мусором.
+по сравнению с <<мгновенным>> удалением и поиском в данных с мусором.
 
 \subsection{Поисковый запрос по первому вхождению заданного ключа для фиксированного числа добавленных элементов}
 
 \subsubsection{Добавление $10^3$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e3/body.png}
-\caption{Признак \textit{body} встречается в 16\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/from.png}
-\caption{Признак \textit{from} встречается в 31\% документов}
+\includegraphics[width=\linewidth, height=9.75cm]{fig/limit_1/1e3/body.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{body}, который встречается в 16\% документов}
+\includegraphics[width=\linewidth, height=9.75cm]{fig/limit_1/1e3/from.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{from}, который встречается в 31\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/to.png}
-\caption{Признак \textit{to} встречается менее, чем в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/subject.png}
-\caption{Признак \textit{subject} встречается в 13\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1/1e3/to.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{to}, который встречается менее, чем в 1\% документов}
+\includegraphics[width=\linewidth, height=10.51cm]{fig/limit_1/1e3/subject.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{subject}, который встречается в 13\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^3$ элементов алгоритм <<мгновенного>> удаления и сбора мусора
@@ -167,56 +163,56 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e4/body.png}
-\caption{Признак \textit{body} встречается в 18\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{body}, который встречается в 18\% документов}
 \includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/from.png}
-\caption{Признак \textit{from} встречается в 7\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{from}, который встречается в 7\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/to.png}
-\caption{Признак \textit{to} встречается менее, чем в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/subject.png}
-\caption{Признак \textit{subject} встречается в 8\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1/1e4/to.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{to}, который встречается менее, чем в 1\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1/1e4/subject.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{subject}, который встречается в 8\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^4$ элементов алгоритм сбора мусора дает выигрыш на большинстве признаков
-по сравнению в <<мгновенным>> удалением и поиском в данных с мусором.
+по сравнению с <<мгновенным>> удалением и поиском в данных с мусором.
 
 \subsubsection{Добавление $10^5$ документов}
 
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e5/body.png}
-\caption{Признак \textit{body} встречается в 16\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{body}, который встречается в 16\% документов}
 \includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e5/from.png}
-\caption{Признак \textit{from} встречается в 1\% документов}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{from}, который встречается в 1\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e5/to.png}
-\caption{Признак \textit{to} встречается в 0,05\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e5/subject.png}
-\caption{Признак \textit{subject} встречается в 5\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1/1e5/to.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{to}, который встречается в 0,05\% документов}
+\includegraphics[width=\linewidth, height=10.5cm]{fig/limit_1/1e5/subject.png}
+\caption{Зависимость времени поиска от размера блока для поиска признака \textit{subject}, который встречается в 5\% документов}
 \end{figure}
 
 
 \textbf{Вывод}: для $10^5$ добавленных документов алгоритм сбора мусора эффективнее
-по сравнению в <<мгновенным>> удалением и поиском в данных с мусором.
+по сравнению с <<мгновенным>> удалением и поиском в данных с мусором.
 
 \subsection{Сравнение времени поиска для различного числа добавленных документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/body.png}
-\caption{Признак \textit{body}}
-\includegraphics[width=\linewidth, height=11cm]{fig/from.png}
-\caption{Признак \textit{from}}
+\includegraphics[width=\linewidth, height=9.75cm]{fig/body.png}
+\caption{Зависимость времени поиска от количества добавленных документов для признака \textit{body}}
+\includegraphics[width=\linewidth, height=9.75cm]{fig/from.png}
+\caption{Зависимость времени поиска от количества добавленных документов для признака \textit{from}}
 \end{figure}
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=11cm]{fig/to.png}
-\caption{Признак \textit{to}}
+\caption{Зависимость времени поиска от количества добавленных документов для признака \textit{to}}
 \includegraphics[width=\linewidth, height=11cm]{fig/subject.png}
-\caption{Признак \textit{subject}}
+\caption{Зависимость времени поиска от количества добавленных документов для признака \textit{subject}}
 \end{figure}
 
 \textbf{Вывод}: построенная по данным модель линейной регрессии показывает
@@ -229,20 +225,22 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 документах.
 
 \newpage
-\subsection{Сравнение времени работы алгоритмов для различного числа добавленных документов}
+\subsection{Сравнение времени работы для различного числа добавленных документов}
 
-\subsubsection{Добавление $10^3$ документов, удаление $\frac{2}{3}$ документов}
+\subsubsection{Добавление $10^3$ документов}
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=10cm]{fig/time_1e3.png}
+\caption{Зависимость времени работы алгоритма от размера блока}
 \end{figure}
 
-\textbf{Вывод}: для $10^3$ элементов сбора мусора эффективнее по времени
+\textbf{Вывод}: для $10^3$ элементов сбор мусора эффективнее по времени
 выполнения, чем алгоритм <<мгновенного>> удаления. Предсказанное отличие
 (см. с. ~\pageref{theory}) во времени работы видно невооруженным взглядом.
 
-\subsubsection{Добавление $10^4$ документов, удаление $\frac{2}{3}$ документов}
+\subsubsection{Добавление $10^4$ документов}
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=11cm]{fig/time_1e4.png}
+\caption{Зависимость времени работы алгоритма от размера блока}
 \end{figure}
 
 \begin{table}[H]
@@ -264,12 +262,13 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 \end{table}
 
 \textbf{Вывод}: для $10^4$ документов алгоритм становится в тысячи раз
-эффективнее метода в лоб: <<мгновенного удаления>>, что соответствует выведенной теории.
+эффективнее метода в лоб: <<мгновенного>> удаления, что соответствует выведенной теории.
 
-\subsubsection{Добавление $10^5$ документов, удаление $\frac{2}{3}$ документов}
+\subsubsection{Добавление $10^5$ документов}
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=11cm]{fig/time_1e5.png}
+\caption{Зависимость времени работы алгоритма от размера блока}
 \end{figure}
 
 \begin{table}[H]
@@ -290,12 +289,13 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 \end{table}
 
 \textbf{Вывод}: для $10^5$ документов алгоритм становится в сотни тысяч раз
-эффективнее метода в лоб: <<мгновенного удаления>>, что соответствует выведенной теории.
+эффективнее метода в лоб: <<мгновенного>> удаления, что соответствует выведенной теории.
 
 \subsubsection{Зависимость времени работы от числа документов}
 
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=11cm]{fig/time.png}
+\caption{Зависимость времени работы алгоритма от количества добавленных документов}
 \end{figure}
 
 \begin{table}[H]
@@ -322,12 +322,13 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 
 Во время выполнения тестов производительности на поиск элементов мы замеряли
 некоторые статистические показатели: количество обращений в долгосрочную память
-на жестком диске (операций чтения и записи), количество слияний с данными на
+на жестком диске (операций чтения и записи) и количество слияний с данными на
 диске.
 \subsubsection{Количество операций записи на диск}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth]{fig/writecalls.png}
+\includegraphics[width=22cm, height=13cm]{fig/writecalls.png}
+\caption{Зависимость количества операций записи на диск от количества добавленных документов}
 \end{figure}
 
 \begin{table}[H]
@@ -349,7 +350,8 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{fig/merges.png}
+\includegraphics[width=22cm, height=13cm]{fig/merges.png}
+\caption{Зависимость количества слияний с диском от количества добавленных документов}
 \end{figure}
 
 \begin{table}[H]
