@@ -4,7 +4,7 @@
 \subsection{Общие замечания}
 
 Для исследования предложенного в \cref{section:dangling} алгоритма и сравнения его с иными
-подходами, такими как мгновенное удаление запрошенных элементов и, как следствие, отсуствие
+подходами, такими как мгновенное удаление запрошенных элементов и, как следствие, отсутствие
 мусора в системе, был написан прототип на языке Go.
 
 Был исследован сценарий, типичный для поисковых систем, когда в индексе добавляется большое
@@ -30,16 +30,12 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
       добавленных элементов $N_0$ и меняющегося размера блока битмапы $2^{x}$.
       \item Запрос по первому вхождению заданного ключа для фиксированного числа
       добавленных элементов $N_0$ и меняющегося размера блока битмапы $2^{x}$.
-      %\item Измерение времени поиска первого вхождения признака для фиксированного размера блока битмапы $2^{x}$ и меняющегося числа добавленных элементов $N_0$.
-      %\item Измерение времени поиска всех вхождения признака для фиксированного размера блока битмапы $2^{x}$ и меняющегося числа добавленных элементов $N_0$.
+      \item Измерение времени поиска всех вхождения признака для меняющегося числа добавленных элементов $N_0$.
 \end{enumerate}
-
-Далее об этих вариантах будет говориться как о <<1 сценарии поиска>> и <<2
-сценарии поиска>> соответственно. 
 
 Количество добавленных документов $N_0 = 10^{x}, x \in \{2, \cdots, 6\}$ в нашем опыте.
 Измеряется время поиска признаков с различной частотой появления в индексе: 1,
-5, 10, 15\%, от общего числа добавленых документов.
+5, 10, 15\%, от общего числа добавленных документов.
 
 %Далее при различных размерах блока, тем самым выясняется оптимальный размер блока. В реальности это значение получается из логических соображений (ни много, ни мало) и колеблется около 15\%.
 
@@ -83,63 +79,44 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 \label{tab:lsm_settings}
 \end{table}
 
-Сравним производительность поиска для индекса после добавления $10^2$, $10^3$, $10^4$ и $10^5$
+Сравним производительность индекса после добавления $10^2$, $10^3$, $10^4$ и $10^5$
 документов соответственно. Для каждого значения добавленных элементов рассмотрим
 признаки с различающейся частотой повторения в данных.
 
 \subsection{Поисковый запрос по всем вхождениям заданного ключа для фиксированного числа добавленных элементов}
 
-\subsubsection{Добавление $10^2$ документов}
-
-\begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e2/body_time.png}
-\caption{Признак \textit{body} встречается в 21\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e2/from_time.png}
-\caption{Признак \textit{from} встречается в 34\% документов}
-\end{figure}
-
-\begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e2/to_time.png}
-\caption{Признак \textit{to} встречается в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e2/subject_time.png}
-\caption{Признак \textit{subject} встречается в 9\% документов}
-\end{figure}
-
-\textbf{Вывод}: для 100 элементов алгоритм <<мновенного>> удаления
-эффективнее сбора мусора.
-
 \subsubsection{Добавление $10^3$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e3/body_time.png}
+\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e3/body.png}
 \caption{Признак \textit{body} встречается в 16\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/from_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/from.png}
 \caption{Признак \textit{from} встречается в 31\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/to_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/to.png}
 \caption{Признак \textit{to} встречается менее, чем в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/subject_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e3/subject.png}
 \caption{Признак \textit{subject} встречается в 13\% документов}
 \end{figure}
 
-\textbf{Вывод}: для 1000 элементов алгоритм сбора мусора дает существенный
+\textbf{Вывод}: для $10^3$ элементов алгоритм сбора мусора дает существенный
 прирост в скорости поиска по сравнению с <<мгновенным>> удалением и поиском в данных с мусором.
 
 \subsubsection{Добавление $10^4$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e4/body_time.png}
+\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e4/body.png}
 \caption{Признак \textit{body} встречается в 18\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/from_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/from.png}
 \caption{Признак \textit{from} встречается в 7\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/to_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/to.png}
 \caption{Признак \textit{to} встречается менее, чем в 1\% документов}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/subject_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e4/subject.png}
 \caption{Признак \textit{subject} встречается в 8\% документов}
 \end{figure}
 
@@ -149,56 +126,57 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 \subsubsection{Добавление $10^5$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth]{fig/limit_1e6/1e5/search.png}
-\caption{Размер блока $2^{10}$}
+\includegraphics[width=\linewidth, height=10cm]{fig/limit_1e6/1e5/body.png}
+\caption{Признак \textit{body} встречается в 16\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e5/from.png}
+\caption{Признак \textit{from} встречается в 1\% документов}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e5/to.png}
+\caption{Признак \textit{to} встречается в 0,05\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1e6/1e5/subject.png}
+\caption{Признак \textit{subject} встречается в 5\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^5$ добавленных документов алгоритм сбора мусора эффективнее
 по сравнению в <<мгновенным>> удалением и поиском в данных с мусором.
 
-\newpage
 \subsection{Поисковый запрос по первому вхождению заданного ключа для фиксированного числа добавленных элементов}
-
-\subsubsection{Добавление $10^2$ документов}
-
-\begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e2/body_time.png}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e2/from_time.png}
-\end{figure}
-
-\begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e2/to_time.png}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e2/subject_time.png}
-\end{figure}
-
-\textbf{Вывод}: для 100 элементов алгоритм <<мновенного>> удаления и сбора мусора
-не вносят существенный вклад в эффективность поиска единственного ключа.
 
 \subsubsection{Добавление $10^3$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e3/body_time.png}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/from_time.png}
+\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e3/body.png}
+\caption{Признак \textit{body} встречается в 16\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/from.png}
+\caption{Признак \textit{from} встречается в 31\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/to_time.png}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/subject_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/to.png}
+\caption{Признак \textit{to} встречается менее, чем в 1\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e3/subject.png}
+\caption{Признак \textit{subject} встречается в 13\% документов}
 \end{figure}
 
-\textbf{Вывод}: для 1000 элементов алгоритм <<мновенного>> удаления и сбора мусора
+\textbf{Вывод}: для $10^3$ элементов алгоритм <<мгновенного>> удаления и сбора мусора
 не вносят существенный вклад в эффективность поиска единственного ключа.
 
 \subsubsection{Добавление $10^4$ документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e4/body_time.png}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/from_time.png}
+\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e4/body.png}
+\caption{Признак \textit{body} встречается в 18\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/from.png}
+\caption{Признак \textit{from} встречается в 7\% документов}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/to_time.png}
-\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/subject_time.png}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/to.png}
+\caption{Признак \textit{to} встречается менее, чем в 1\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e4/subject.png}
+\caption{Признак \textit{subject} встречается в 8\% документов}
 \end{figure}
 
 \textbf{Вывод}: для $10^4$ элементов алгоритм сбора мусора дает выигрыш на большинстве признаков
@@ -206,32 +184,61 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
 
 \subsubsection{Добавление $10^5$ документов}
 
+
 \begin{figure}[H]
-\includegraphics[width=\linewidth]{fig/limit_1/1e5/search.png}
-\caption{Размер блока $2^{10}$}
+\includegraphics[width=\linewidth, height=10cm]{fig/limit_1/1e5/body.png}
+\caption{Признак \textit{body} встречается в 16\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e5/from.png}
+\caption{Признак \textit{from} встречается в 1\% документов}
 \end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e5/to.png}
+\caption{Признак \textit{to} встречается в 0,05\% документов}
+\includegraphics[width=\linewidth, height=11cm]{fig/limit_1/1e5/subject.png}
+\caption{Признак \textit{subject} встречается в 5\% документов}
+\end{figure}
+
 
 \textbf{Вывод}: для $10^5$ добавленных документов алгоритм сбора мусора эффективнее
 по сравнению в <<мгновенным>> удалением и поиском в данных с мусором.
 
-\newpage
-\subsection{Сравнение времени работы алгоритмов для различного числа добавленных документов}
-
-\subsubsection{Добавление $10^2$ документов, удаление $\frac{2}{3}$ документов}
+\subsection{Сравнение времени поиска для различного числа добавленных документов}
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth, height=10cm]{fig/time_1e2.png}
+\includegraphics[width=\linewidth, height=10cm]{fig/body.png}
+\caption{Признак \textit{body}}
+\includegraphics[width=\linewidth, height=11cm]{fig/from.png}
+\caption{Признак \textit{from}}
 \end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth, height=11cm]{fig/to.png}
+\caption{Признак \textit{to}}
+\includegraphics[width=\linewidth, height=11cm]{fig/subject.png}
+\caption{Признак \textit{subject}}
+\end{figure}
+
+\textbf{Вывод}: построенная по данным модель линейной регрессии показывает
+положительный тренд в плане эффективности использования сбора мусора по сравнению
+с другими алгоритмами с ростом данных.
+
+Таким образом, полученная теоретическая оценка (см. с. ~\pageref{theory})
+выполняется на большинстве признаков. Погрешность вносит отличная от теоретической
+разреженность битмап и меняющаяся от признака к признаку частота появления в
+документах.
+
+\newpage
+\subsection{Сравнение времени работы алгоритмов для различного числа добавленных документов}
 
 \subsubsection{Добавление $10^3$ документов, удаление $\frac{2}{3}$ документов}
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=10cm]{fig/time_1e3.png}
 \end{figure}
 
-\textbf{Вывод}: для 100 элементов алгоритм <<мновенного>> удаления
-эффективнее сбора мусора. Получается, что для малого числа документов использование
-отложенного удаления вида сбора мусора нелогично. Для 1000 элементов алгоритм
-<<мновенного>> удаления медленнее алгоритма сбора мусора.
+\textbf{Вывод}: для $10^3$ элементов сбора мусора эффективнее по времени
+выполнения, чем алгоритм <<мгновенного>> удаления. Предсказанное отличие
+(см. с. ~\pageref{theory}) во времени работы видно невооруженным взглядом.
 
 \subsubsection{Добавление $10^4$ документов, удаление $\frac{2}{3}$ документов}
 \begin{figure}[H]
@@ -246,20 +253,21 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
       \begin{tabular}{|c|c|c|}
             \hline
             Размер блока & Сбор мусора                & <<Мгновенное удаление>> \\ \hline \hline
-            7            & 0.269618                   & 4627.649                \\ \hline
-            8            & 0.272035                   & 5012.865                \\ \hline
-            9            & 0.276679                   & 4864.4414               \\ \hline
-            10           & 0.254468                   & 5110.06                 \\ \hline
-            11           & 0.25441                    & 4744.915                \\ \hline
-            12           & 0.254357                   & 4838.297                \\ \hline
-            13           & 0.25433                    & 4966.4146               \\ \hline
+            7            & 2.70e-01	                  & 4.63e+03              \\ \hline
+            8            & 2.72e-01	                  & 5.01e+03              \\ \hline
+            9            & 2.77e-01	                  & 4.86e+03              \\ \hline
+            10           & 2.54e-01                   & 5.11e+03              \\ \hline
+            11           & 2.54e-01                   & 4.74e+03              \\ \hline
+            12           & 2.54e-01	                  & 4.84e+03              \\ \hline
+            13           & 2.54e-01	                  & 4.97e+03              \\ \hline
 \end{tabular}
 \end{table}
 
 \textbf{Вывод}: для $10^4$ документов алгоритм становится в тысячи раз
-эффективнее метода в лоб: <<мгновенного удаления>>.
+эффективнее метода в лоб: <<мгновенного удаления>>, что соответствует выведенной теории.
 
 \subsubsection{Добавление $10^5$ документов, удаление $\frac{2}{3}$ документов}
+
 \begin{figure}[H]
 \includegraphics[width=\linewidth, height=11cm]{fig/time_1e5.png}
 \end{figure}
@@ -271,15 +279,43 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
       \singlespacing
       \begin{tabular}{|c|c|c|}
             \hline
-            Размер блока & Сбор мусора                & <<Мгновенное удаление>> \\ \hline \hline
-            10           & 0.253822                   & 225616.848              \\ \hline
-            11           & 0.254688                   & 175847.244              \\ \hline
-            12           & 0.254053                   & 313510.579              \\ \hline
+            Размер блока & Сбор мусора                & <<Мгновенное>> удаление \\ \hline \hline
+            10           & 2.54e-01                   & 2.26e+05              \\ \hline
+            11           & 2.55e-01                   & 1.76e+05              \\ \hline
+            12           & 2.54e-01                   & 3.14e+05              \\ \hline
+            13           & 2.55e-01                   & 2.36e+05              \\ \hline
+            14           & 2.55e-01                   & 2.33e+05              \\ \hline
+            15           & 2.54e-01                   & 1.83e+05              \\ \hline
 \end{tabular}
 \end{table}
 
-\textbf{Вывод}: для $10^5$ документов алгоритм становится в тысячи раз
-эффективнее метода в лоб: <<мгновенного удаления>>.
+\textbf{Вывод}: для $10^5$ документов алгоритм становится в сотни тысяч раз
+эффективнее метода в лоб: <<мгновенного удаления>>, что соответствует выведенной теории.
+
+\subsubsection{Зависимость времени работы от числа документов}
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth, height=11cm]{fig/time.png}
+\end{figure}
+
+\begin{table}[H]
+      \caption{Время работы алгоритмов, с}
+      \centering
+      \small
+      \singlespacing
+      \begin{tabular}{|c|c|c|}
+            \hline
+            Число документов & Сбор мусора                & <<Мгновенное>> удаление \\ \hline \hline
+            $10^2$           & 3.60e-02                   & 1.71e-02              \\ \hline
+            $10^3$           & 1.47e-01                   & 1.79e-01              \\ \hline
+            $10^4$           & 2.54e-04                   & 5.11e+00              \\ \hline
+            $10^5$           & 2.54e-04                   & 3.14e+02              \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Вывод}: прослеживается глобальный тренд экспоненциального роста времени
+работы алгоритма <<мгновенного>> удаления. График соответствует выведенной теории,
+что позволяет еще раз указать на важность сбора мусора в данных.
 
 \newpage
 \subsection{Статистика количества операций записи, чтения и слияния для различного числа добавленных документов}
@@ -305,7 +341,7 @@ $\frac{\text{bitmap block size} \cdot \lambda}{C}$, где $C \in \mathbb{I}, C 
             100                                 & 8                           & 9                           \\ \hline
             1000                                & 38                          & 46                          \\ \hline
             10000                               & 347                         & 413                         \\ \hline
-            100000                              & 16791                       & 20967                       \\ \hline
+            100000                              & 14132                       & 11948                       \\ \hline
 \end{tabular}
 \end{table}
 
