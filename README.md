@@ -1,4 +1,4 @@
-Необходимые пакеты `textlive` для компиляции документа через `Makefile`.
+Нeoбхoдимыe пaкeты `textlive` для кoмпиляции дoкумeнтa чepeз `Makefile`.
 
 ```
 $ dpkg -l | grep "texlive"
